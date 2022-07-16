@@ -1,0 +1,32 @@
+#!/bin/su root
+npm init -y
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init
+touch postcss.config.js
+cat> postcss.config.js << END
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  }
+}
+END
+cat> tailwind.config.js << END
+module.exports = {
+  content: ["./src/**/*.{html,js}"],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+END
+mkdir public
+mkdir public/stylesheets/
+touch public/stylesheets/main.css
+cat > public/stylesheets/main.css << END
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+END
+npx tailwind -i public/stylesheets/main.css -o public/stylesheets/output.css --watch
+

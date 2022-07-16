@@ -1,0 +1,158 @@
+#!/bin/bash
+
+# Inisialisasi
+npm init -y
+
+# Install Express
+npm i express-generator
+express --view=ejs
+
+# Install nodemon
+npm i nodemon
+
+
+# ===== Install Tailwind =====
+npm i -D tailwindcss@latest postcss@latest postcss-cli@latest autoprefixer@latest
+
+# Inisialisasi config tailwind
+npx tailwindcss init
+
+# Edit Config TailwindCSS
+cat> tailwind.config.js << END
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+  'views/layout/main.ejs',
+'views/*.html',
+  'views/*.ejs'
+  ],
+  theme: {
+    container:{
+      center: true,
+      padding:'16px'
+    },
+    extend: {
+      screens: {
+        '2xl':'1320px'
+      },
+      colors: {
+        'primary':'#299ae5'
+      }
+    },
+  },
+  plugins: [],
+}
+END
+
+# Membuat Config POSTCSS
+touch postcss.config.js
+cat> postcss.config.js << END
+module.exports = {
+    plugins: [
+        require('tailwindcss'),
+        require('autoprefixer')
+    ]
+}
+END
+
+# Membuat File Base CSS Tailwind
+touch public/stylesheets/input.css
+rm public/stylesheets/style.css
+cat> public/stylesheets/input.css << END
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    font-family: "DIN Alternate", sans-serif;
+    font-size: 16px;
+}
+END
+# === END KONFIGURASI TAILWIND ===
+
+# === KONFIGURASI EJS DAN LAYOUT ==
+
+
+# Membuat Folder Layout/main untuk express-ejs-layouts
+mkdir views/layout
+touch views/layout/main.ejs
+cat>views/layout/main.ejs<<END
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="stylesheet" href="stylesheets/output.css" />
+    <title><%= title %></title>
+  </head>
+  <body>
+    <%- body %>
+  </body>
+</html>
+END
+
+
+# Membuat route index agar langsung terkait pada layout/main
+rm routes/users.js
+rm views/error.ejs
+cat>routes/index.js<< END
+var express = require('express');
+var router = express.Router();
+
+/* GET home page. */
+router.get('/', function(req, res, next) {
+  res.render('index',
+    {
+      layout: './layout/main',
+      title:'Halaman Utama'
+  })
+});
+
+module.exports = router;
+END
+
+cat>views/index.ejs<<END
+<h1>Sukses</h1>
+END
+
+
+# Ubah app.js
+cat>app.js<<END
+var createError = require('http-errors');
+var express = require('express');
+var path = require('path');
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
+var ejsLayout = require('express-ejs-layouts')
+
+var app = express();
+app.listen(3000,()=>{
+  console.log('server berjalan')
+  })
+
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+app.use(ejsLayout)
+
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+
+
+var indexRouter = require('./routes/index');
+app.use('/', indexRouter);
+
+
+module.exports = app;
+END
+
+
+# Finalisasi
+npm install & npm install express-ejs-layouts
+
+# output
+echo -e "silahkan jalankan npx tailwind -i public/stylesheets/input.css -o public/stylesheets/output.css --watch"
+echo -e "Kemudian jalankan nodemon app.js"
