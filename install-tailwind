@@ -1,5 +1,6 @@
 #!/bin/su root
 # echo debian
+# echo ec
 npm init -y
 npm install -D tailwindcss postcss autoprefixer
 npx tailwindcss init
